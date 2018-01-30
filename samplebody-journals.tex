@@ -1,0 +1,187 @@
+\section{Introduction}
+
+The definition of a Particle System seems to depend on the apllication that it is being used for. It has been used to describe different techniques from modelling to rendering. 
+The use of Particle Systems is a way of modeling fuzzy objects, such as water, fire, clouds, snow, smoke, etc. These don't have a smooth well-defined surface and are non-rigid objects, they are dynamic and fluid.
+% quote
+\begin{quote}
+  ``A particle system is a collection of many many minute particles that together represent a fuzzy object. Over a period of time, particles are generated into a system, move and change from within the system, and die from the system''.
+\end{quote}
+
+Particle Systems differ in some ways from ``normal'' representations of a 3D model:
+% itemize
+\begin{itemize}
+\item An object is not represented by a set of primitive surface elements, e.g. polygons, but as cluds of primitive particles that define its volume. 
+\item A particle system is not a static entity, its particles have a cicle of life. They move and change form, new particles are created and old particles are destroyed.
+\item An object represented by a particle system is not deterministic, its shar and form is not specified. Attributes are Stochastically defined, the introduction of some type of random element is used to create and change an object's shape and appearance. Attributes like a position, velocity, etc. are controlled by this random element. The element usually is controlled by some type of predefined limits.
+\end{itemize}
+
+% Head 1
+\section{Particle System}
+
+% Head 2
+\subsection{System}
+The Particle System will have to deal with flexible quantities of elements. Sometimes zero elements, sometimes a thousand of elements. The quantity of elementes is flexible because all that elementes that are generated into a system, move,change and die from the System. To compute each frame some steps must be taken into consideration: \textbf{(1)} new particles are generated into the system, \textbf{(2)} each new particle is assigned with default values, \textbf{(3)} any particles that reached the end of their lifetime will be deactivated until the emmitter uses them again \textbf{(4)} the remaining particles are moved and tranformed. Because of that, we're going to want to take a object-oriented approach to the implementation. Instead of defining a Particle writing only a single class, many diferent types of particles will have their own class extending a base particle class. We are also write a class that describes the collection of particles (the particle system itself).
+
+\lstset{language=C,caption={Definition of a Particle System},label=DescriptiveLabel1}
+\begin{lstlisting}
+class Main
+{
+	ParticleSystem particleSystem;
+	void Start(){
+		Vector3 origin = new Vector3(0, 5, 0);
+		int maxParticles = 100;
+		particleSystem = new ParticleSystem(maxParticles, origin);
+	}
+
+	void Update(){
+		particleSystem.Run();
+	}
+}
+\end{lstlisting}
+The objective here was to not reference a single particle in the code, yet the result screen will be full of particles. A particle system will act like an emitter, it will create and emmit particles in a given position using a list of elements with a given size. The way the particle System handles all the particles may vary, it can use a pool of elements or simply use an array removing the last element and creating a new one in the beginning, this aproaches have different inpact on performance.
+
+% Head 3
+\subsubsection{Particle Generation}
+Particles are generated using controlled stochastic processes. There are various processes to calculate how many particles the designer wants at any given frame in the screen. The first process controlls the mean number of particles and its variance at a frame. The actual number of particles generated at a frame \emph{f} is 
+\begin{equation}
+\label{eqn:01}
+	NParts\emph{f} = MeanParts\emph{f} + Rand() x VarParts\emph{f},
+\end{equation}
+where Rand returns a random number from -1.0 to +1.0, MeanParts\emph{f} the mean number of particles, and VarParts\emph{f} its variance.
+	The Second process takes the screnn size of the object as the controll parameter. The mean number of particles per unit of screen area and its variance are controlled. The particle system can determine the view parameters at any given frame and calculate the screen area that it covers so a number of new particles can be set accordingly. The equation is
+\begin{equation}
+\label{eqn:01}
+	NParts\emph{f} = (MeanParts\emph{sa}\emph{f} + Rand() x VarParts\emph{sa}\emph{f}) x ScreenArea,
+\end{equation}
+where MeanPartssa is the mean particles per screen area, VarPartsa is its variance, and ScreenArea the particle system's screen area. This method controls the level od detail of the particle system that directly affects the time required to update all the particles.
+	
+\lstset{language=C,caption={Implementation of a Particle System},label=DescriptiveLabel1}
+\begin{lstlisting}
+class ParticleSystem<T> where T : Particle, new()
+{
+	private T Part { get; set; }
+
+	protected int maxParticles;
+	protected int numParticles;
+	protected Vector3 origin;
+	protected Vector3 force;
+	
+	protected Queue<T> Queue;
+	protected List<Particle> particleList;
+	
+	public ParticleSystem(int maxParticles,Vector3 origin)
+	{
+		this.maxParticles = maxParticles;
+		this.origin = origin;
+		
+		particleList = new List(maxParticles);
+	}
+	
+	private virtual void GenerateParticles()
+	{
+		for (int i = 0; i < maxParticles; i++)
+       {
+       	   //Create a new Particle
+       	   Part = new T();
+          particleList.Add(Part);
+          Queue.Enqueue(Part);
+    	}
+	}
+	
+	public virtual void Run()
+	{
+        if (IsActive)
+        {
+	     	Timer += Time.deltaTime;
+           if (Timer > 0.0005f)
+           {
+              Timer = 0.0f;
+              Part = Queue.Dequeue();
+              Part.Reset();
+              Queue.Enqueue(Part);
+           }
+        }
+        //Update all the Particles
+        foreach (T particle in Particulas)
+        {
+		 	  particle.Update(time);
+            if (particle.Lifespan <= 0)
+            {
+               particle.Active = false;
+            }
+        }
+        ParticlesOnScreen = Particulas.Count;
+	}
+}
+\end{lstlisting}
+Here
+
+% Head 4
+\subsection{Particle}
+
+A particle system constains a collection of simple objects (\emph{Particles}). Each object in a particle system can have several attributes like:
+\begin{itemize}
+\item Position - The current position in world coordinates.
+\item Velocity - Speed $\vec{o}^{\,s}$ and direction $\vec{o}^{\,d}$ .
+\item Color - Color of the object that can change over time depending on a random element.
+\item Age and Lifetime 
+\item Shape
+\item Size
+\item Tranparency
+\end{itemize}
+	For each new individual particle generated, the system must determine values for this attributes.
+A particle system has a position in three-dimensional space that defines its origin. A particle system also has a \emph{generation shape} which defines a region where all the particles will be generated. It can have a shape of a disk a square or even a spherical shape.
+
+\begin{figure}
+  \includegraphics{particleSystem}
+  \caption{Spherical Particle System.}
+  \label{fig:one}
+\end{figure}
+
+	The generation shape of a particle system also describes the initial direction of new particles. In a spherical shape, particles will move in all directions away from the origin of the particle system. In a disk shape or a retangular shape particles can be generated in the surface and can simply fall using gravity or have other behaviours depending on actuators like wind. The color and the shape of a particle can change using a Random element or change because of other attributes given to a certain type of particle. For example a particle can turn red depending on a heat attribute that changes over time.
+	The number of possible attribute control parameters and their variants is endless. Those present here are the ones that I have found to be most useful and interesting.
+ 
+ 
+% Head 5
+\subsection{Particle Dynamics}
+Particles within a particle system move in the three-dimensional space and can change color, shape and transparency. Particles move using its velocity vector (speed and direction), this can be affected by forces like gravity. To move a particle frame by fram we simply add its velocity vector to its position vector. This attribute changes can be controlled in global or local rate-of-change.
+	There are some types of \emph{Forces} that can be applyied to particles. There are Unary forces like
+gravity or viscosity, N-ary forces like springs and environmental forces that can be result of collisions or repulsion. Unary forces are applied to particles independently like Gravity and Drag. Gravity is a constant acceleration in downward direction 
+\begin{equation}
+\label{eqn:03}
+f_{drag}(t) = -k_{d}\, \Delta\, x / \Delta t = k_{d}\, \textbf{v},
+\end{equation}
+where $\texttt{g}_{\texttt{0}} = \left [ 0\, -9.8\; \; 0 \right ]\, \frac{\emph{m}}{s^{2}}$
+\\
+and Drag the resistance to motion through air proportional to speed.
+\begin{equation}
+\label{eqn:04}
+f_{drag}(t) = -k_{d}\, \Delta\, x / \Delta t = k_{d}\, \textbf{v},
+\end{equation}
+where $-k_{d}$ is the drag coefficient, if $-k_{d}$ = 0 theen the particles are in vacunn, high values simulate drag in liquids.\\*
+On the other hand N-ary forces are applied between particles.
+\begin{itemize}
+\item Gravitational attraction  
+\item Electrical charge
+\item Springs
+\end{itemize}
+Springs are pairs of particles connected. Two connected particles \emph{a} and \emph{b} exert force on one another proportional to the displacement of the \textbf{resting length} \emph{r} of the spring. As each spring has a rest length, if the spring length is greater than this length then the force acts to pull the two particles together, if the spring length is less than the rest length then the force acts to repel the two particles. This can be used to simulate objects with elastic properties for example cloth or ropes.
+\subsubsection{Collision avoidance}
+\begin{figure}
+  \begin{subfigure}[b]{0.4\textwidth}
+    \includegraphics[width=\textwidth]{cloth1}
+    \caption{Cloth simulation using a Spring system.}
+    \label{fig:two}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.4\textwidth}
+    \includegraphics[width=\textwidth]{rope1}
+    \caption{Rope simulation using a Spring system.}
+    \label{fig:three}
+  \end{subfigure}
+\end{figure}
+
+% Head 6
+\subsection{Particle Extinction}
+Each particle has two attributes dealing with length of existence: age and lifetime. When it is generated, a particle is given a lifetime measured in frames. As each frame is computed the lifetime is decremented. A particle is deactivated or killed when its lifetime reaches zero. Age is the time that the particle has been alive (measured in frames), this value is always initialized to zero when the particle is generated. Other mechanisms, can be used for terminating a particle. If the particle ran out of bounds, these bounds can be in screen space or in projection space, and will not reenter it, then the particle can be deactivated as there is no reason to keep it alive. Other objects can be used to terminate particles, if a particle touches a certain object in the space that particle is deactivated. Using a threshold, when a particle attribute reaches a certain threshold that particle can be deactivated, for example if the color is almost red and red is a color that won't contribute to the final image that particle can be deactivated. 
+
+% Bibliography

@@ -1,0 +1,114 @@
+\documentclass[acmlarge]{acmart}
+
+\usepackage{booktabs} % For formal tables
+\usepackage{esvect}
+\usepackage{listings} % For source code
+\usepackage{color}
+\usepackage{subcaption} 
+
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\lstset{ %
+  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}; should come as last argument
+  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{mygreen},    % comment style
+  deletekeywords={...},            % if you want to delete keywords from the given language
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  frame=single,	                 % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  language=Octave,                 % the language of the code
+  morekeywords={*,...},            % if you want to add more keywords to the set
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=5pt,                   % how far the line-numbers are from the code
+  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{mymauve},     % string literal style
+  tabsize=2,	                     % sets default tabsize to 2 spaces
+  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+
+\usepackage[ruled]{algorithm2e} % For algorithms
+\renewcommand{\algorithmcfname}{ALGORITHM}
+\SetAlFnt{\small}
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\SetAlCapHSkip{0pt}
+\IncMargin{-\parindent}
+
+% Metadata Information
+%\acmJournal{PACMHCI}
+%\acmVolume{1}
+%\acmNumber{1}
+%\acmArticle{1}
+%\acmYear{2018}
+%\acmMonth{1}
+%\acmArticleSeq{22}
+
+%\acmBadgeR[http://ctuning.org/ae/ppopp2016.html]{ae-logo}
+%\acmBadgeL[http://ctuning.org/ae/ppopp2016.html]{ae-logo}
+
+
+% Copyright
+%\setcopyright{acmcopyright}
+%\setcopyright{acmlicensed}
+%\setcopyright{rightsretained}
+%\setcopyright{usgov}
+%\setcopyright{usgovmixed}
+%\setcopyright{cagov}
+%\setcopyright{cagovmixed}
+
+% DOI
+%\acmDOI{0000001.0000001}
+
+% Paper history
+%\received{February 2007}
+%\received{March 2009}
+%\received[accepted]{June 2009}
+
+
+% Document starts
+\begin{document}
+% Title portion
+\title{Particle Systems}
+%\titlenote{}
+
+\author{Jorge Paiva}
+%\authornote{This is the corresponding author}
+%\orcid{1234-5678-9012-3456}
+\affiliation{%
+  \institution{University of Minho}
+  %\streetaddress{104 Jamestown Rd}
+  \city{Braga}
+  \postcode{4710-092}
+  \country{POR}}
+\email{fskjorge@gmail.com}
+\author{}
+
+
+
+\begin{abstract}
+This papper shall guide you through the definition of the term \emph{Particle System} and it's usage in the computer graphics world. Things like what is the usage of particle systems and how can they be created will be aborded.
+\end{abstract}
+
+\maketitle
+
+% The default list of authors is too long for headers.
+%\renewcommand{\shortauthors}{Jorge Paiva}
+
+\input{samplebody-journals}
+
+
+
+\end{document}
