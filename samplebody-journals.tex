@@ -54,67 +54,6 @@ where Rand returns a random number from -1.0 to +1.0, MeanParts\emph{f} the mean
 	NParts_{f} = (MeanParts_{sa}\emph{f} + Rand() x VarParts_{sa}\emph{f}) x ScreenArea,
 \end{equation}
 where $MeanParts_{sa}$ is the mean particles per screen area, $VarPart_{sa}$ is its variance, and ScreenArea the particle system's screen area. This method controls the level od detail of the particle system that directly affects the time required to update all the particles.
-	
-\lstset{language=C,caption={Implementation of a Particle System},label=DescriptiveLabel1}
-\begin{lstlisting}
-class ParticleSystem<T> where T : Particle, new()
-{
-	private T Part { get; set; }
-
-	protected int maxParticles;
-	protected int numParticles;
-	protected Vector3 origin;
-	protected Vector3 force;
-	
-	protected Queue<T> Queue;
-	protected List<Particle> particleList;
-	
-	public ParticleSystem(int maxParticles,Vector3 origin)
-	{
-		this.maxParticles = maxParticles;
-		this.origin = origin;
-		
-		particleList = new List(maxParticles);
-	}
-	
-	private virtual void GenerateParticles()
-	{
-		for (int i = 0; i < maxParticles; i++)
-       {
-       	   //Create a new Particle
-       	   Part = new T();
-          particleList.Add(Part);
-          Queue.Enqueue(Part);
-    	}
-	}
-	
-	public virtual void Run()
-	{
-        if (IsActive)
-        {
-	     	Timer += Time.deltaTime;
-           if (Timer > 0.0005f)
-           {
-              Timer = 0.0f;
-              Part = Queue.Dequeue();
-              Part.Reset();
-              Queue.Enqueue(Part);
-           }
-        }
-        //Update all the Particles
-        foreach (T particle in Particulas)
-        {
-		 	  particle.Update(time);
-            if (particle.Lifespan <= 0)
-            {
-               particle.Active = false;
-            }
-        }
-        ParticlesOnScreen = Particulas.Count;
-	}
-}
-\end{lstlisting}
-Here
 
 % Head 4
 \subsection{Particle}
@@ -179,18 +118,38 @@ Springs are pairs of particles connected. Two connected particles \emph{a} and \
 	\end{subfigure}
 \end{figure}
 \subsubsection{Collision avoidance}
-Assuming that particles don't collide with each other,as that would be too expensive to compute, particles will only collide with the environment. The basic idea is to generate a steering force to avoid obstacles. Even if there are several obstacles in the environment, only one of them will be used at a time to calculate the avoidance force.
+Assuming that particles don't collide with each other,as that would be too expensive to compute, particles will only collide with the environment. The basic idea is to generate a steering force to avoid obstacles. Even if there are several obstacles in the environment, only one of them will be used at a time to calculate the avoidance force \emph{figure} \ref{fig:four}.
 \begin{figure}
 	\includegraphics{CollisionAvoidanceBasis}
 	\caption{Obstacles ahead are analyzed and the closes one is selected}
 	\label{fig:four}
 \end{figure}
-The velocity vector \vec{\emph{v}} describes the direction of the element. It will be used to produce a new vector called \vec{\emph{ahead}}, which is a copy of the velocity vector, but with a different length.\\
+The velocity vector $\vec{\emph{v}}$ describes the direction of the element. It will be used to produce a new vector called $\vec{\emph{ahead}}$, which is a copy of the velocity vector, but with a different length \emph{figure} \ref{fig:five}.\\
 \begin{figure}
-	\includegraphics{AheadVector}
+	\includegraphics{vectorahead}
 	\caption{}
 	\label{fig:five}
 \end{figure}
+
+This vector is calculated as follows:
+\begin{equation}
+\vec{\emph{S}} = P + normalize(\vec{v}) * MaxSeeAhead
+\end{equation}
+Where $\vec{\emph{S}}$ is the Ahead vector, $\vec{v}$ the element current velocity, normalize($\vec{v}$) takes a vector and divides all its components by its length Length = $\frac{\vec{v}}{\lVert v \rVert}$, MaxSeeAhead defines how far the particle will "see" obstacles.\\
+The greater the ahead length is, the earlier the particle will compute the steering behaviour to avoid the obstacle.
+In order to check for collision, every obstacle must have a bounding box defined by a geometric form. Using a sphere gives the best result overall. One possible solution is to check collision using a line-sphere intersection \emph{figure} \ref{fig:four}, where the line is the ahead vector and the sphere is the obstacle. So if the distance between the center of the sphere and the ahead vector is less than the sphere radius, a collision was found.
+\begin{figure}
+ 	\includegraphics{collision}
+ 	\caption{\emph{d} is the distance and \emph{r} is the radius}
+ 	\label{fig:six}
+\end{figure}
+To determine the distance between two vectors the Euclidean distance was used. If more than on obstacle is in the way only the closest one is "threatening", selected for calculation.
+\begin{figure}
+	\includegraphics{Threat}
+	\caption{}
+	\label{fig:seven}
+\end{figure}
+Now we know if a certain obstacle is in the way, but, only with that information the particle would only stop or simply go through the obstacle. To make the particles avoid them, a new vector is added: the avoidance force. The avoidance force will push the particle away from the obstacle therefore avoiding it. It can be done using a the center of the sphere position and the forward vector of the particle, by subtracting them and then normalizing the result. This new vector is now added to the forward vector every frame, and that will result the particle being pushed away from the center of the object. 
 % Head 6
 \subsection{Particle Extinction}
 Each particle has two attributes dealing with length of existence: age and lifetime. When it is generated, a particle is given a lifetime measured in frames. As each frame is computed the lifetime is decremented. A particle is deactivated or killed when its lifetime reaches zero. Age is the time that the particle has been alive (measured in frames), this value is always initialized to zero when the particle is generated. Other mechanisms, can be used for terminating a particle. If the particle ran out of bounds, these bounds can be in screen space or in projection space, and will not reenter it, then the particle can be deactivated as there is no reason to keep it alive. Other objects can be used to terminate particles, if a particle touches a certain object in the space that particle is deactivated. Using a threshold, when a particle attribute reaches a certain threshold that particle can be deactivated, for example if the color is almost red and red is a color that won't contribute to the final image that particle can be deactivated. 
